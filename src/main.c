@@ -19,6 +19,8 @@ int main(int argc, char *argv[])
     char buf[256] = "Type some item to be added...";
     int index = 0;
 
+    struct nk_image remove_icon = LoadNuklearImage("../resources/remove.png");
+
     while (!WindowShouldClose())
     {
         // Update the Nuklear context, along with input
@@ -40,7 +42,17 @@ int main(int argc, char *argv[])
 
             for (int i = 0; i < index; i++)
             {
+                nk_layout_row_static(ctx, 30, 100, 2);
                 nk_label(ctx, items[i], NK_TEXT_ALIGN_LEFT);
+                if (nk_button_image(ctx, remove_icon))
+                {
+                    memset(items[i], 0, sizeof(items[i]));
+                    for (int j = i; j < 9; j++)
+                    {
+                        strcpy(items[j], items[j+1]);
+                    }
+                    index--;
+                }
             }
         }
         nk_end(ctx);
