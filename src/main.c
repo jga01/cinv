@@ -7,6 +7,10 @@
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
+#define BUFF_SIZE 256
+
+const int max_items = 100;
+
 int main(int argc, char *argv[])
 {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "CINV");
@@ -15,9 +19,9 @@ int main(int argc, char *argv[])
     int fontSize = 10;
     struct nk_context *ctx = InitNuklear(fontSize);
 
-    char items[10][256] = {0};
-    char buf[256] = "Type some item to be added...";
-    int index = 0;
+    char items[max_items][BUFF_SIZE];
+    char buf[BUFF_SIZE] = "Type some item to be added...";
+    int list_size = 0;
 
     struct nk_image remove_icon = LoadNuklearImage("../resources/remove.png");
     struct nk_image edit_icon = LoadNuklearImage("../resources/edit.png");
@@ -30,12 +34,11 @@ int main(int argc, char *argv[])
         // Update the Nuklear context, along with input
         UpdateNuklear(ctx);
 
-        if (nk_begin(ctx, "", nk_rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), 0))
+        if (nk_begin(ctx, "", nk_rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), NK_WINDOW_NO_SCROLLBAR))
         {
             nk_menubar_begin(ctx);
-
             nk_layout_row_dynamic(ctx, 0, 8);
-            if (nk_menu_begin_image_label(ctx, "Settings", NK_WIDGET_RIGHT, settings_icon, nk_vec2(100, 1000)))
+            if (nk_menu_begin_image_label(ctx, "Settings", NK_WIDGET_RIGHT, settings_icon, nk_vec2(100, 0)))
             {
                 nk_menu_end(ctx);
             }
@@ -48,50 +51,70 @@ int main(int argc, char *argv[])
             if (nk_menu_begin_image_label(ctx, "Export", NK_WIDGET_RIGHT, export_icon, nk_vec2(100, 0)))
             {
                 nk_menu_end(ctx);
-            }    
+            }
             nk_menubar_end(ctx);
 
-            nk_layout_row_dynamic(ctx, 0, 1);
-            nk_label(ctx, "Item:", NK_TEXT_LEFT);
-            nk_edit_string_zero_terminated(ctx, NK_EDIT_BOX | NK_EDIT_AUTO_SELECT, buf, sizeof(buf), nk_filter_default);
-            if (nk_button_label(ctx, "Add"))
+            nk_layout_row_begin(ctx, NK_DYNAMIC, SCREEN_HEIGHT - 50, 2);
+            nk_layout_row_push(ctx, 0.7f);
+            if (nk_group_begin(ctx, "grid", NK_WINDOW_BORDER))
             {
-                if (index < 10)
-                {
-                    strcpy(items[index], buf);
-                    index++;
-                }
-            }
+                int row_flags = NK_WINDOW_NO_SCROLLBAR;
 
-            for (int i = 0; i < index; i++)
-            {
                 nk_layout_row_dynamic(ctx, 50, 1);
-                if (nk_group_begin(ctx, "item row", NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
+                for (int i = 0; i < list_size; i++)
                 {
-                    nk_layout_row_dynamic(ctx, 50, 2);
-                    nk_label(ctx, items[i], NK_TEXT_ALIGN_LEFT);
-                    if (nk_group_begin(ctx, "item options", NK_WINDOW_NO_SCROLLBAR))
+                    if (nk_group_begin(ctx, "item row", row_flags | NK_WINDOW_BORDER))
                     {
-                        nk_layout_row_dynamic(ctx, 0, 10);
-                        if (nk_button_image(ctx, edit_icon))
+                        nk_layout_row_begin(ctx, NK_DYNAMIC, 40, 2);
+                        nk_layout_row_push(ctx, 0.8f);
+                        if (nk_group_begin(ctx, "item values", row_flags))
                         {
-                            strcpy(items[i], buf);
+                            nk_layout_row_dynamic(ctx, 0, 3);
+                            nk_label(ctx, items[i], NK_TEXT_ALIGN_LEFT);
+                            nk_group_end(ctx);
                         }
-                        if (nk_button_image(ctx, remove_icon))
+                        nk_layout_row_push(ctx, 0.2f);
+                        if (nk_group_begin(ctx, "item options", row_flags))
                         {
-                            memset(items[i], 0, sizeof(items[i]));
-                            for (int j = i; j < 9; j++)
+                            nk_layout_row_dynamic(ctx, 30, 2);
+                            if (nk_button_image(ctx, edit_icon))
                             {
-                                strcpy(items[j], items[j + 1]);
+                                strcpy(items[i], buf);
                             }
-                            index--;
-                        }
+                            if (nk_button_image(ctx, remove_icon))
+                            {
+                                memset(items[i], 0, sizeof(items[i]));
+                                for (int j = i; j < max_items - 1; j++)
+                                {
+                                    strcpy(items[j], items[j + 1]);
+                                }
+                                list_size--;
+                            }
 
+                            nk_group_end(ctx);
+                        }
                         nk_group_end(ctx);
                     }
-                    nk_group_end(ctx);
                 }
+                nk_group_end(ctx);
             }
+            nk_layout_row_push(ctx, 0.3f);
+            if (nk_group_begin(ctx, "panel", NK_WINDOW_NO_SCROLLBAR))
+            {
+                nk_layout_row_dynamic(ctx, 0, 1);
+                nk_label(ctx, "Item:", NK_TEXT_LEFT);
+                nk_edit_string_zero_terminated(ctx, NK_EDIT_BOX | NK_EDIT_AUTO_SELECT, buf, sizeof(buf), nk_filter_default);
+                if (nk_button_label(ctx, "Add"))
+                {
+                    if (list_size < max_items)
+                    {
+                        strcpy(items[list_size], buf);
+                        list_size++;
+                    }
+                }
+                nk_group_end(ctx);
+            }
+            nk_layout_row_end(ctx);
         }
         nk_end(ctx);
 
