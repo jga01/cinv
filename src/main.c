@@ -11,6 +11,13 @@
 
 const int max_items = 100;
 
+struct grid_item
+{
+    struct nk_image *img;
+    char name[BUFF_SIZE];
+    int quantity;
+};
+
 int main(int argc, char *argv[])
 {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "CINV");
@@ -19,7 +26,7 @@ int main(int argc, char *argv[])
     int fontSize = 10;
     struct nk_context *ctx = InitNuklear(fontSize);
 
-    char items[max_items][BUFF_SIZE];
+    struct grid_item items[max_items];
     char buf[BUFF_SIZE] = "Type some item to be added...";
     int list_size = 0;
 
@@ -60,6 +67,16 @@ int main(int argc, char *argv[])
             {
                 int row_flags = NK_WINDOW_NO_SCROLLBAR;
 
+                nk_layout_row_dynamic(ctx, 0, 1);
+                if (nk_group_begin(ctx, "grid_header", row_flags))
+                {
+                    nk_layout_row_dynamic(ctx, 0, 5);
+                    nk_label(ctx, "Image", NK_TEXT_ALIGN_LEFT);
+                    nk_label(ctx, "Name", NK_TEXT_ALIGN_LEFT);
+                    nk_label(ctx, "Quantity", NK_TEXT_ALIGN_LEFT);
+                    nk_group_end(ctx);
+                }
+
                 nk_layout_row_dynamic(ctx, 50, 1);
                 for (int i = 0; i < list_size; i++)
                 {
@@ -69,8 +86,13 @@ int main(int argc, char *argv[])
                         nk_layout_row_push(ctx, 0.8f);
                         if (nk_group_begin(ctx, "item values", row_flags))
                         {
+                            char qty[10] = {0};
+                            sprintf(qty, "%d", items[i].quantity);
+
                             nk_layout_row_dynamic(ctx, 0, 3);
-                            nk_label(ctx, items[i], NK_TEXT_ALIGN_LEFT);
+                            nk_image(ctx, *items[i].img);
+                            nk_label(ctx, items[i].name, NK_TEXT_ALIGN_LEFT);
+                            nk_label(ctx, qty, NK_TEXT_ALIGN_LEFT);
                             nk_group_end(ctx);
                         }
                         nk_layout_row_push(ctx, 0.2f);
@@ -79,14 +101,13 @@ int main(int argc, char *argv[])
                             nk_layout_row_dynamic(ctx, 30, 2);
                             if (nk_button_image(ctx, edit_icon))
                             {
-                                strcpy(items[i], buf);
+                                strcpy(items[i].name, buf);
                             }
                             if (nk_button_image(ctx, remove_icon))
                             {
-                                memset(items[i], 0, sizeof(items[i]));
                                 for (int j = i; j < max_items - 1; j++)
                                 {
-                                    strcpy(items[j], items[j + 1]);
+                                    items[j] = items[j + 1];
                                 }
                                 list_size--;
                             }
@@ -108,7 +129,9 @@ int main(int argc, char *argv[])
                 {
                     if (list_size < max_items)
                     {
-                        strcpy(items[list_size], buf);
+                        struct grid_item item = {.img = &settings_icon, .name = {0}, .quantity = 0};
+                        strcpy(item.name, buf);
+                        items[list_size] = item;
                         list_size++;
                     }
                 }
