@@ -4,12 +4,12 @@
 #define RAYLIB_NUKLEAR_IMPLEMENTATION
 #include "raylib-nuklear.h"
 
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 600
 
 int main(int argc, char *argv[])
 {
-    InitWindow(640, 480, "CINV");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "CINV");
 
     // Create the Nuklear Context
     int fontSize = 10;
@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
     int index = 0;
 
     struct nk_image remove_icon = LoadNuklearImage("../resources/remove.png");
+    struct nk_image edit_icon = LoadNuklearImage("../resources/edit.png");
 
     while (!WindowShouldClose())
     {
@@ -28,7 +29,7 @@ int main(int argc, char *argv[])
 
         if (nk_begin(ctx, "", nk_rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), 0))
         {
-            nk_layout_row_static(ctx, 30, 250, 1);
+            nk_layout_row_dynamic(ctx, 0, 1);
             nk_label(ctx, "Item:", NK_TEXT_LEFT);
             nk_edit_string_zero_terminated(ctx, NK_EDIT_BOX | NK_EDIT_AUTO_SELECT, buf, sizeof(buf), nk_filter_default);
             if (nk_button_label(ctx, "Add"))
@@ -42,16 +43,31 @@ int main(int argc, char *argv[])
 
             for (int i = 0; i < index; i++)
             {
-                nk_layout_row_static(ctx, 30, 100, 2);
-                nk_label(ctx, items[i], NK_TEXT_ALIGN_LEFT);
-                if (nk_button_image(ctx, remove_icon))
+                nk_layout_row_dynamic(ctx, 50, 1);
+                if (nk_group_begin(ctx, "item row", NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
                 {
-                    memset(items[i], 0, sizeof(items[i]));
-                    for (int j = i; j < 9; j++)
+                    nk_layout_row_dynamic(ctx, 50, 2);
+                    nk_label(ctx, items[i], NK_TEXT_ALIGN_LEFT);
+                    if (nk_group_begin(ctx, "item options", NK_WINDOW_NO_SCROLLBAR))
                     {
-                        strcpy(items[j], items[j+1]);
+                        nk_layout_row_dynamic(ctx, 0, 10);
+                        if (nk_button_image(ctx, edit_icon))
+                        {
+                            strcpy(items[i], buf);
+                        }
+                        if (nk_button_image(ctx, remove_icon))
+                        {
+                            memset(items[i], 0, sizeof(items[i]));
+                            for (int j = i; j < 9; j++)
+                            {
+                                strcpy(items[j], items[j + 1]);
+                            }
+                            index--;
+                        }
+
+                        nk_group_end(ctx);
                     }
-                    index--;
+                    nk_group_end(ctx);
                 }
             }
         }
