@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
             if (show_about)
             {
-                static struct nk_rect s = {SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 - 80, 300, 190};
+                static struct nk_rect s = {SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 - 80, 300, 190};
                 if (nk_popup_begin(ctx, NK_POPUP_STATIC, "About", NK_WINDOW_CLOSABLE, s))
                 {
                     nk_layout_row_dynamic(ctx, 20, 1);
