@@ -31,11 +31,16 @@ int main(int argc, char *argv[])
     char image_path[BUFF_SIZE] = "Path: none";
     int list_size = 0;
 
+    int item_quantity = 0;
+
+    int show_about = nk_false;
+
     struct nk_image remove_icon = LoadNuklearImage("../resources/remove.png");
     struct nk_image edit_icon = LoadNuklearImage("../resources/edit.png");
     struct nk_image settings_icon = LoadNuklearImage("../resources/settings.png");
     struct nk_image import_icon = LoadNuklearImage("../resources/import.png");
     struct nk_image export_icon = LoadNuklearImage("../resources/export.png");
+    struct nk_image about_icon = LoadNuklearImage("../resources/about.png");
 
     while (!WindowShouldClose())
     {
@@ -45,7 +50,27 @@ int main(int argc, char *argv[])
         if (nk_begin(ctx, "", nk_rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), NK_WINDOW_NO_SCROLLBAR))
         {
             nk_menubar_begin(ctx);
-            nk_layout_row_dynamic(ctx, 0, 8);
+            nk_layout_row_static(ctx, 0, 120, 4);
+            if (nk_button_image_label(ctx, about_icon, "About", NK_BUTTON_DEFAULT))
+            {
+                show_about = !show_about;
+            }
+
+            if (show_about)
+            {
+                static struct nk_rect s = {SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 - 80, 300, 190};
+                if (nk_popup_begin(ctx, NK_POPUP_STATIC, "About", NK_WINDOW_CLOSABLE, s))
+                {
+                    nk_layout_row_dynamic(ctx, 20, 1);
+                    nk_label(ctx, "Cinv", NK_TEXT_LEFT);
+                    nk_label(ctx, "By Jamestiago", NK_TEXT_LEFT);
+                    nk_label(ctx, "Contact me at my discord jamestiago.", NK_TEXT_LEFT);
+                    nk_popup_end(ctx);
+                }
+                else
+                    show_about = nk_false;
+            }
+
             if (nk_menu_begin_image_label(ctx, "Settings", NK_WIDGET_RIGHT, settings_icon, nk_vec2(100, 0)))
             {
                 nk_menu_end(ctx);
@@ -127,8 +152,6 @@ int main(int argc, char *argv[])
             nk_layout_row_push(ctx, 0.3f);
             if (nk_group_begin(ctx, "panel", NK_WINDOW_NO_SCROLLBAR))
             {
-                int item_quantity;
-
                 nk_layout_row_dynamic(ctx, 0, 1);
                 nk_label(ctx, "Item:", NK_TEXT_LEFT);
                 nk_edit_string_zero_terminated(ctx, NK_EDIT_BOX | NK_EDIT_AUTO_SELECT, buf, sizeof(buf), nk_filter_default);
