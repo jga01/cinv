@@ -21,6 +21,9 @@ int main(int argc, char *argv[])
 
     struct nk_image remove_icon = LoadNuklearImage("../resources/remove.png");
     struct nk_image edit_icon = LoadNuklearImage("../resources/edit.png");
+    struct nk_image settings_icon = LoadNuklearImage("../resources/settings.png");
+    struct nk_image import_icon = LoadNuklearImage("../resources/import.png");
+    struct nk_image export_icon = LoadNuklearImage("../resources/export.png");
 
     while (!WindowShouldClose())
     {
@@ -29,6 +32,25 @@ int main(int argc, char *argv[])
 
         if (nk_begin(ctx, "", nk_rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), 0))
         {
+            nk_menubar_begin(ctx);
+
+            nk_layout_row_dynamic(ctx, 0, 8);
+            if (nk_menu_begin_image_label(ctx, "Settings", NK_WIDGET_RIGHT, settings_icon, nk_vec2(100, 1000)))
+            {
+                nk_menu_end(ctx);
+            }
+
+            if (nk_menu_begin_image_label(ctx, "Import", NK_WIDGET_RIGHT, import_icon, nk_vec2(100, 0)))
+            {
+                nk_menu_end(ctx);
+            }
+
+            if (nk_menu_begin_image_label(ctx, "Export", NK_WIDGET_RIGHT, export_icon, nk_vec2(100, 0)))
+            {
+                nk_menu_end(ctx);
+            }    
+            nk_menubar_end(ctx);
+
             nk_layout_row_dynamic(ctx, 0, 1);
             nk_label(ctx, "Item:", NK_TEXT_LEFT);
             nk_edit_string_zero_terminated(ctx, NK_EDIT_BOX | NK_EDIT_AUTO_SELECT, buf, sizeof(buf), nk_filter_default);
