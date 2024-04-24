@@ -23,8 +23,9 @@ int main(int argc, char *argv[])
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "CINV");
 
     // Create the Nuklear Context
-    int fontSize = 12;
-    struct nk_context *ctx = InitNuklear(fontSize);
+    int fontSize = 14;
+    Font font = LoadFont("../resources/Helvetica.ttf");
+    struct nk_context *ctx = InitNuklearEx(font, fontSize);
 
     struct grid_item items[max_items];
     char buf[BUFF_SIZE] = "Item to be added...";
